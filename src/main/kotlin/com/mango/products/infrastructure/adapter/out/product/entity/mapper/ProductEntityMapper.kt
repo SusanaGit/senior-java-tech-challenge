@@ -2,6 +2,7 @@ package com.mango.products.infrastructure.adapter.out.product.entity.mapper
 
 import com.mango.products.domain.product.ProductDomain
 import com.mango.products.infrastructure.adapter.out.product.entity.ProductEntity
+import com.mango.products.infrastructure.adapter.out.product.entity.ProductPriceEntity
 
 fun ProductDomain.toEntity(): ProductEntity =
     ProductEntity(
@@ -11,10 +12,10 @@ fun ProductDomain.toEntity(): ProductEntity =
         prices = mutableListOf()
     )
 
-fun ProductEntity.toDomain(): ProductDomain =
+fun ProductEntity.toDomain(priceEntities: List<ProductPriceEntity>): ProductDomain =
     ProductDomain(
         id = id,
         name = name,
         description = description,
-        prices = mutableListOf()
+        prices = priceEntities.map { it.toDomain() }
     )

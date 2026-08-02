@@ -20,4 +20,8 @@ interface ProductPriceJpaRepository : JpaRepository<ProductPriceEntity, Long> {
         @Param("productId") productId: Long,
         @Param("date") date: LocalDate
     ): ProductPriceEntity?
+
+    fun findAllByProductIdOrderByInitDateAsc(
+        productId: Long
+    ): List<ProductPriceEntity>
 }

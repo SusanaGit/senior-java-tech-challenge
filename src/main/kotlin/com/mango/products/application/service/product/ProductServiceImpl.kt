@@ -21,4 +21,8 @@ class ProductServiceImpl(private val productPort: ProductPort) : ProductService 
     override fun getProductPriceByDate(productId: Long, date: LocalDate): BigDecimal {
         return productPort.getProductPriceByDate(productId, date)
     }
+
+    override fun getProductPricesHistory(productId: Long): ProductDomain {
+        return productPort.getProductPricesHistory(productId)
+    }
 }

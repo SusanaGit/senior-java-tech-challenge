@@ -3,6 +3,7 @@ package com.mango.products.infrastructure.adapter.out.product
 import com.mango.products.domain.port.out.ProductPort
 import com.mango.products.domain.product.ProductDomain
 import com.mango.products.domain.product.ProductPriceDomain
+import com.mango.products.infrastructure.adapter.out.product.entity.mapper.toDomain
 import com.mango.products.infrastructure.adapter.out.product.entity.mapper.toEntity
 import com.mango.products.infrastructure.adapter.out.product.repository.ProductJpaRepository
 import com.mango.products.infrastructure.adapter.out.product.repository.ProductPriceJpaRepository
@@ -40,5 +41,14 @@ class ProductAdapter(
             //?: throw ProductPriceNotFoundException(productId, date)
 
         return price.value
+    }
+
+    override fun getProductPricesHistory(productId: Long): ProductDomain {
+        val productEntity = productJpaRepository.findById(productId)
+            .orElseThrow {
+                RuntimeException("Product not found: $productId")
+            }
+
+        return productEntity.toDomain(productPriceJpaRepository.findAllByProductIdOrderByInitDateAsc(productId))
     }
 }

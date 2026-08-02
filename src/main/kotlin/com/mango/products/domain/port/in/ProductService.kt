@@ -9,4 +9,5 @@ interface ProductService {
     fun createProduct(productDomain: ProductDomain)
     fun addProductPrice(productId: Long, productPriceDomain: ProductPriceDomain)
     fun getProductPriceByDate(productId: Long, date: LocalDate): BigDecimal
+    fun getProductPricesHistory(productId: Long): ProductDomain
 }

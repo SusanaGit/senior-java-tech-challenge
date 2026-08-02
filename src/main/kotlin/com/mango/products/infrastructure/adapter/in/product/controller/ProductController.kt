@@ -3,10 +3,12 @@ package com.mango.products.infrastructure.adapter.`in`.product.controller
 import com.mango.products.domain.port.`in`.ProductService
 import com.mango.products.infrastructure.adapter.`in`.product.mapper.toDomain
 import com.mango.products.infrastructure.adapter.out.product.mapper.toGetProductPriceByDateOutput
+import com.mango.products.infrastructure.adapter.out.product.mapper.toGetProductPricesHistoryOutput
 import com.mango.products.infrastructure.api.ProductsApi
 import com.mango.products.infrastructure.api.model.GetProductPriceByDateOutput
 import com.mango.products.infrastructure.api.model.AddProductPriceInput
 import com.mango.products.infrastructure.api.model.CreateProductInput
+import com.mango.products.infrastructure.api.model.GetProductPricesHistoryOutput
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
@@ -41,10 +43,9 @@ class ProductController(private val productService: ProductService) : ProductsAp
         return ResponseEntity.ok(productService.getProductPriceByDate(productId, date).toGetProductPriceByDateOutput())
     }
 
-    /*
-    override fun getProductPriceHistory(
+    override fun getProductPricesHistory(
         productId: Long
-    ): ResponseEntity<ProductPriceHistory> {
-        TODO("Not yet implemented")
-    }*/
+    ): ResponseEntity<GetProductPricesHistoryOutput> {
+        return ResponseEntity.ok(productService.getProductPricesHistory(productId).toGetProductPricesHistoryOutput())
+    }
 }

@@ -85,14 +85,14 @@ paths:
         - Products
       summary: Get the complete price history of a product.
       description: Returns the product information and all its price periods.
-      operationId: getProductPriceHistory
+      operationId: getProductPricesHistory
       responses:
         "200":
           description: Product price history retrieved successfully.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProductPriceHistory"
+                $ref: "#/components/schemas/GetProductPricesHistoryOutput"
         "404":
           $ref: "#/components/responses/ProductNotFound"
         "500":
@@ -255,8 +255,8 @@ components:
           multipleOf: 0.01
           example: 99.99
 
-    ProductPriceHistory:
-      title: ProductPriceHistory
+    GetProductPricesHistoryOutput:
+      title: GetProductPricesHistoryOutput
       type: object
       additionalProperties: false
       description: Product information with its complete price history.
@@ -275,7 +275,7 @@ components:
           type: array
           description: Complete collection of product price periods.
           items:
-            $ref: "#/components/schemas/Price"
+            $ref: "#/components/schemas/ProductPriceOutput"
           example:
             - value: 99.99
               initDate: "2024-01-01"
@@ -284,8 +284,8 @@ components:
               initDate: "2025-01-01"
               endDate: "2025-06-30"
 
-    Price:
-      title: Price
+    ProductPriceOutput:
+      title: Product
       type: object
       additionalProperties: false
       description: Product price and its validity period.
