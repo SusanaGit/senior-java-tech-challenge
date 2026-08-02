@@ -31,16 +31,6 @@ paths:
       responses:
         "201":
           description: Product created successfully.
-          headers:
-            Location:
-              description: URL of the created product.
-              schema:
-                type: string
-                example: "/products/1"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Product"
         "400":
           $ref: "#/components/responses/BadRequest"
         "500":
@@ -72,10 +62,6 @@ paths:
       responses:
         "201":
           description: Price added successfully.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Price"
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -226,36 +212,6 @@ components:
           description: Product description.
           example: "Limited edition 2025 model"
 
-    Product:
-      title: Product
-      type: object
-      additionalProperties: false
-      description: Product information.
-      required:
-        - id
-        - name
-        - description
-        - prices
-      properties:
-        id:
-          type: integer
-          format: int64
-          readOnly: true
-          description: Auto-generated product identifier.
-          example: 1
-        name:
-          type: string
-          example: "Sports shoes"
-        description:
-          type: string
-          example: "Limited edition 2025 model"
-        prices:
-          type: array
-          description: Product price periods. Initially, this collection is empty.
-          items:
-            $ref: "#/components/schemas/Price"
-          example: []
-
     CreatePriceInput:
       title: CreatePriceInput
       type: object
@@ -267,7 +223,6 @@ components:
       properties:
         value:
           type: number
-          format: decimal
           minimum: 0
           exclusiveMinimum: true
           multipleOf: 0.01
@@ -287,34 +242,6 @@ components:
             that the price has no defined end date.
           example: "2024-06-30"
 
-    Price:
-      title: Price
-      type: object
-      additionalProperties: false
-      description: Product price and its validity period.
-      required:
-        - value
-        - initDate
-        - endDate
-      properties:
-        value:
-          type: number
-          format: decimal
-          multipleOf: 0.01
-          description: Monetary value of the product price.
-          example: 99.99
-        initDate:
-          type: string
-          format: date
-          description: First date on which the price is applicable.
-          example: "2024-01-01"
-        endDate:
-          type: string
-          format: date
-          nullable: true
-          description: Last date on which the price is applicable.
-          example: "2024-06-30"
-
     ApplicablePrice:
       title: ApplicablePrice
       type: object
@@ -325,7 +252,6 @@ components:
       properties:
         value:
           type: number
-          format: decimal
           multipleOf: 0.01
           example: 99.99
 
@@ -357,6 +283,34 @@ components:
             - value: 199.99
               initDate: "2025-01-01"
               endDate: "2025-06-30"
+
+    Price:
+      title: Price
+      type: object
+      additionalProperties: false
+      description: Product price and its validity period.
+      required:
+        - value
+        - initDate
+      properties:
+        value:
+          type: number
+          multipleOf: 0.01
+          description: Monetary value of the product price.
+          example: 99.99
+
+        initDate:
+          type: string
+          format: date
+          description: First date on which the price is applicable.
+          example: "2024-01-01"
+
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          description: Last date on which the price is applicable. Null means the price has no end date.
+          example: "2024-06-30"
 
     ApiError:
       title: ApiError

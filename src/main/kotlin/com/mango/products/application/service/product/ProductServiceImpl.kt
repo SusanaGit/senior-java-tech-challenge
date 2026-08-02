@@ -1,8 +1,13 @@
 package com.mango.products.application.service.product
 
 import com.mango.products.domain.port.`in`.ProductService
+import com.mango.products.domain.port.out.ProductPort
+import com.mango.products.domain.product.ProductDomain
 import org.springframework.stereotype.Service
 
 @Service
-class ProductServiceImpl : ProductService {
+class ProductServiceImpl(private val productPort: ProductPort) : ProductService {
+    override fun createProduct(productDomain: ProductDomain) {
+        return productPort.createProduct(productDomain)
+    }
 }

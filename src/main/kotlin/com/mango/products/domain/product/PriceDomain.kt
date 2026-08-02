@@ -1,10 +1,11 @@
 package com.mango.products.domain.product
 
 import java.math.BigDecimal
-import java.util.Date
+import java.time.LocalDate
 
 data class PriceDomain(
+    val id: Long?,
     val value: BigDecimal,
-    val initDate: Date,
-    val endDate: Date
+    val initDate: LocalDate,
+    val endDate: LocalDate?
 )
