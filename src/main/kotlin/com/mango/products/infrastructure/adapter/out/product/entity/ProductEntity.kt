@@ -30,10 +30,10 @@ class ProductEntity(
     var description: String,
 
     @OneToMany(
-        mappedBy = "product",
+        mappedBy = "productId",
         cascade = [CascadeType.ALL],
         orphanRemoval = true,
         fetch = FetchType.LAZY
     )
-    var prices: MutableList<PriceEntity> = mutableListOf()
+    var prices: MutableList<ProductPriceEntity> = mutableListOf()
 )

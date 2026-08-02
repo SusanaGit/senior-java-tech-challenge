@@ -36,7 +36,7 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
 
-  /products/{id}/prices:
+  /products/{productId}/prices:
     parameters:
       - $ref: "#/components/parameters/ProductId"
 
@@ -54,7 +54,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreatePriceInput"
+              $ref: "#/components/schemas/AddProductPriceInput"
             example:
               value: 99.99
               initDate: "2024-01-01"
@@ -98,7 +98,7 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
 
-  /products/{id}/price:
+  /products/{productId}/price:
     get:
       tags:
         - Products
@@ -142,7 +142,7 @@ paths:
 components:
   parameters:
     ProductId:
-      name: id
+      name: productId
       in: path
       required: true
       description: Auto-generated product identifier.
@@ -212,8 +212,8 @@ components:
           description: Product description.
           example: "Limited edition 2025 model"
 
-    CreatePriceInput:
-      title: CreatePriceInput
+    AddProductPriceInput:
+      title: AddProductPriceInput
       type: object
       additionalProperties: false
       description: Request used to add a price to a product.

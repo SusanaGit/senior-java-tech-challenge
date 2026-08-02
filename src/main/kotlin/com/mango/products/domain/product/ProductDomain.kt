@@ -4,5 +4,5 @@ data class ProductDomain (
     val id: Long?,
     val name: String,
     val description: String,
-    val prices: List<PriceDomain> = emptyList()
+    val prices: List<ProductPriceDomain> = emptyList()
 )

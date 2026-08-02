@@ -15,7 +15,7 @@ import java.time.LocalDate
 
 @Entity
 @Table(name = "PRICE")
-class PriceEntity(
+class ProductPriceEntity(
     @Id
     @GeneratedValue(
         strategy = GenerationType.SEQUENCE,
@@ -39,5 +39,5 @@ class PriceEntity(
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "PRODUCT_ID", nullable = false)
-    var product: ProductEntity
+    var productId: ProductEntity
 )
