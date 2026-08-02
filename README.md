@@ -1,6 +1,29 @@
 # 🧪 Prueba Técnica – Sistema de Productos con Precios Históricos
 
-## 🧩 Contexto
+## 1. Instrucciones para compilar y ejecutar el proyecto.
+
+## 2. Justificación de decisiones técnicas.
+
+### Creación del contract.yml
+
+### Arquitectura Hexagonal
+
+## 3. Indicaciones si agregaste mejoras, asumiste supuestos o cambiaste los endpoints.
+
+### Modificación de los endpoints
+
+He modificado el endpoint GET /products/{id}/*prices*?date=2024-04-15 cambiando el prices por price, ya que lo que quiero obtener es el precio del producto para la fecha específica y considero que se entiende mejor en singular. La otra opción se
+interpretaría como aplicar el filtro de la fecha en la colección de precios del producto, pero me parece menos entendible.
+
+## 4. Cómo ejecutar la prueba de rendimiento (si aplicaste ese desafío).
+
+
+
+
+
+
+
+
 
 Tu objetivo es diseñar e implementar una API que permita gestionar productos y sus precios históricos. Cada producto puede tener múltiples precios a lo largo del tiempo, pero solo un precio puede estar vigente para una misma fecha.
 
@@ -135,19 +158,3 @@ Esto te permite aplicar estrategias como separación de servicios, caché, balan
 - Documentación con Swagger/OpenAPI.
 - Scripts para poblar datos de prueba automáticamente.
 - Soporte para paginación, ordenamiento o filtrado en el historial de precios.
-
----
-
-## 📦 Entrega
-
-### El `README.md` debe incluir:
-
-- Instrucciones para compilar y ejecutar el proyecto.
-- Justificación de decisiones técnicas.
-- Indicaciones si agregaste mejoras, asumiste supuestos o cambiaste los endpoints.
-- Cómo ejecutar la prueba de rendimiento (si aplicaste ese desafío).
-- Para evitar copias preferimos que nos mandes un zip o nos envíes invitación de un repositorio PRIVADO de Github al contacto que te pasó la prueba.
-
----
-
-¡Buena suerte! Queremos ver cómo piensas, no solo cómo codificas.
