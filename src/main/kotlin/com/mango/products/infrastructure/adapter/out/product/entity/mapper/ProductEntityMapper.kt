@@ -1,4 +1,4 @@
-package com.mango.products.infrastructure.adapter.out.product.mapper
+package com.mango.products.infrastructure.adapter.out.product.entity.mapper
 
 import com.mango.products.domain.product.ProductDomain
 import com.mango.products.infrastructure.adapter.out.product.entity.ProductEntity

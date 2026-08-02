@@ -1,4 +1,4 @@
-package com.mango.products.infrastructure.adapter.out.product.mapper
+package com.mango.products.infrastructure.adapter.out.product.entity.mapper
 
 import com.mango.products.domain.product.ProductPriceDomain
 import com.mango.products.infrastructure.adapter.out.product.entity.ProductEntity
@@ -10,7 +10,7 @@ fun ProductPriceDomain.toEntity(productEntity: ProductEntity): ProductPriceEntit
         value = value,
         initDate = initDate,
         endDate = endDate,
-        productId = productEntity
+        product = productEntity
     )
 
 fun ProductPriceEntity.toDomain(): ProductPriceDomain =

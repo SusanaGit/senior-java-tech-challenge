@@ -2,5 +2,22 @@ package com.mango.products.infrastructure.adapter.out.product.repository
 
 import com.mango.products.infrastructure.adapter.out.product.entity.ProductPriceEntity
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
+import java.time.LocalDate
 
-interface ProductPriceJpaRepository : JpaRepository<ProductPriceEntity, Long>
+interface ProductPriceJpaRepository : JpaRepository<ProductPriceEntity, Long> {
+    @Query(
+        """
+    SELECT p
+    FROM ProductPriceEntity p
+    WHERE p.product.id = :productId
+      AND p.initDate <= :date
+      AND (p.endDate IS NULL OR p.endDate >= :date)
+    """
+    )
+    fun getProductPriceByDate(
+        @Param("productId") productId: Long,
+        @Param("date") date: LocalDate
+    ): ProductPriceEntity?
+}

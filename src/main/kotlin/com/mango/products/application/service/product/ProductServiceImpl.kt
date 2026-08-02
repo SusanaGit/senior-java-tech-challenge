@@ -5,6 +5,8 @@ import com.mango.products.domain.port.out.ProductPort
 import com.mango.products.domain.product.ProductDomain
 import com.mango.products.domain.product.ProductPriceDomain
 import org.springframework.stereotype.Service
+import java.math.BigDecimal
+import java.time.LocalDate
 
 @Service
 class ProductServiceImpl(private val productPort: ProductPort) : ProductService {
@@ -14,5 +16,9 @@ class ProductServiceImpl(private val productPort: ProductPort) : ProductService 
 
     override fun addProductPrice(productId: Long, productPriceDomain: ProductPriceDomain) {
         return productPort.addProductPrice(productId, productPriceDomain)
+    }
+
+    override fun getProductPriceByDate(productId: Long, date: LocalDate): BigDecimal {
+        return productPort.getProductPriceByDate(productId, date)
     }
 }

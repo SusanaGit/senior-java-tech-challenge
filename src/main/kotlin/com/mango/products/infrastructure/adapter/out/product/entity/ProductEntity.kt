@@ -30,7 +30,7 @@ class ProductEntity(
     var description: String,
 
     @OneToMany(
-        mappedBy = "productId",
+        mappedBy = "product",
         cascade = [CascadeType.ALL],
         orphanRemoval = true,
         fetch = FetchType.LAZY

@@ -39,5 +39,5 @@ class ProductPriceEntity(
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "PRODUCT_ID", nullable = false)
-    var productId: ProductEntity
+    var product: ProductEntity
 )

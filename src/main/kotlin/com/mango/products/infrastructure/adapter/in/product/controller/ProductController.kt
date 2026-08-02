@@ -2,12 +2,15 @@ package com.mango.products.infrastructure.adapter.`in`.product.controller
 
 import com.mango.products.domain.port.`in`.ProductService
 import com.mango.products.infrastructure.adapter.`in`.product.mapper.toDomain
+import com.mango.products.infrastructure.adapter.out.product.mapper.toGetProductPriceByDateOutput
 import com.mango.products.infrastructure.api.ProductsApi
+import com.mango.products.infrastructure.api.model.GetProductPriceByDateOutput
 import com.mango.products.infrastructure.api.model.AddProductPriceInput
 import com.mango.products.infrastructure.api.model.CreateProductInput
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 
 @RestController
 class ProductController(private val productService: ProductService) : ProductsApi {
@@ -31,17 +34,17 @@ class ProductController(private val productService: ProductService) : ProductsAp
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 
-    /*override fun getProductPriceHistory(
-        id: Long
-    ): ResponseEntity<ProductPriceHistory> {
-        TODO("Not yet implemented")
+    override fun getProductPriceByDate(
+        productId: Long,
+        date: LocalDate
+    ): ResponseEntity<GetProductPriceByDateOutput> {
+        return ResponseEntity.ok(productService.getProductPriceByDate(productId, date).toGetProductPriceByDateOutput())
     }
 
-    override fun getProductPriceByDate(
-        id: Long,
-        date: LocalDate
-    ): ResponseEntity<ApplicablePrice> {
+    /*
+    override fun getProductPriceHistory(
+        productId: Long
+    ): ResponseEntity<ProductPriceHistory> {
         TODO("Not yet implemented")
     }*/
-
 }
