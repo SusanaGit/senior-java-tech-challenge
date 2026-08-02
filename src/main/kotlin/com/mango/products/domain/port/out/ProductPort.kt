@@ -10,4 +10,8 @@ interface ProductPort {
     fun addProductPrice(productId: Long, productPriceDomain: ProductPriceDomain)
     fun getProductPriceByDate(productId: Long, date: LocalDate): BigDecimal
     fun getProductPricesHistory(productId: Long): ProductDomain
+    fun existsOverlappingPrice(
+        productId: Long,
+        productPriceDomain: ProductPriceDomain
+    ): Boolean
 }

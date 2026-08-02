@@ -3,6 +3,9 @@ package com.mango.products.infrastructure.adapter.out.product
 import com.mango.products.domain.port.out.ProductPort
 import com.mango.products.domain.product.ProductDomain
 import com.mango.products.domain.product.ProductPriceDomain
+import com.mango.products.domain.exception.ProductNotFoundException
+import com.mango.products.domain.exception.ProductPriceNotFoundException
+import com.mango.products.infrastructure.adapter.out.product.entity.ProductEntity
 import com.mango.products.infrastructure.adapter.out.product.entity.mapper.toDomain
 import com.mango.products.infrastructure.adapter.out.product.entity.mapper.toEntity
 import com.mango.products.infrastructure.adapter.out.product.repository.ProductJpaRepository
@@ -16,6 +19,7 @@ class ProductAdapter(
     private val productJpaRepository: ProductJpaRepository,
     private val productPriceJpaRepository: ProductPriceJpaRepository
 ) : ProductPort {
+
     override fun createProduct(productDomain: ProductDomain) {
         productJpaRepository.save(productDomain.toEntity())
     }
@@ -24,31 +28,43 @@ class ProductAdapter(
         productId: Long,
         productPriceDomain: ProductPriceDomain
     ) {
-        val productEntity = productJpaRepository.findById(productId)
-            .orElseThrow {
-                RuntimeException("Product with id: $productId not found")
-            }
-
         productPriceJpaRepository.save(
-            productPriceDomain.toEntity(productEntity)
+            productPriceDomain.toEntity(findProductEntity(productId))
         )
     }
 
     override fun getProductPriceByDate(productId: Long, date: LocalDate): BigDecimal {
-        val price = productPriceJpaRepository
-            .getProductPriceByDate(productId, date)
-            ?: throw RuntimeException("Product with id: $productId not found")
-            //?: throw ProductPriceNotFoundException(productId, date)
+        findProductEntity(productId)
 
-        return price.value
+        return productPriceJpaRepository
+            .getProductPriceByDate(productId, date)
+            ?: throw ProductPriceNotFoundException(productId, date)
     }
 
     override fun getProductPricesHistory(productId: Long): ProductDomain {
-        val productEntity = productJpaRepository.findById(productId)
-            .orElseThrow {
-                RuntimeException("Product not found: $productId")
-            }
+        val productEntity = findProductEntity(productId)
 
-        return productEntity.toDomain(productPriceJpaRepository.findAllByProductIdOrderByInitDateAsc(productId))
+        val priceEntities = productPriceJpaRepository.findAllByProductIdOrderByInitDateAsc(productId)
+
+        return productEntity.toDomain(priceEntities)
+    }
+
+    override fun existsOverlappingPrice(
+        productId: Long,
+        productPriceDomain: ProductPriceDomain
+    ): Boolean {
+        findProductEntity(productId)
+        return productPriceJpaRepository.existsOverlappingPrice(
+            productId = productId,
+            initDate = productPriceDomain.initDate,
+            endDate = productPriceDomain.endDate
+        )
+    }
+
+    private fun findProductEntity(productId: Long): ProductEntity {
+        return productJpaRepository.findById(productId)
+            .orElseThrow {
+                ProductNotFoundException(productId)
+            }
     }
 }

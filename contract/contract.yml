@@ -67,16 +67,7 @@ paths:
         "404":
           $ref: "#/components/responses/ProductNotFound"
         "409":
-          description: The price period overlaps with an existing price period.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiError"
-              example:
-                status: 409
-                error: "Conflict"
-                message: "The price period overlaps with an existing price period."
-                path: "/products/1/prices"
+          $ref: "#/components/responses/PricePeriodConflict"
         "500":
           $ref: "#/components/responses/InternalServerError"
 
@@ -108,14 +99,7 @@ paths:
       operationId: getProductPriceByDate
       parameters:
         - $ref: "#/components/parameters/ProductId"
-        - name: date
-          in: query
-          required: true
-          description: Date for which the applicable product price is requested.
-          schema:
-            type: string
-            format: date
-          example: "2024-04-15"
+        - $ref: "#/components/parameters/ApplicableDate"
       responses:
         "200":
           description: Applicable product price retrieved successfully.
@@ -126,16 +110,7 @@ paths:
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
-          description: Product or applicable price not found.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiError"
-              example:
-                status: 404
-                error: "Not Found"
-                message: "No applicable price was found for the requested date."
-                path: "/products/1/price"
+          $ref: "#/components/responses/ProductOrPriceNotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
 
@@ -152,6 +127,16 @@ components:
         minimum: 1
       example: 1
 
+    ApplicableDate:
+      name: date
+      in: query
+      required: true
+      description: Date for which the applicable product price is requested.
+      schema:
+        type: string
+        format: date
+      example: "2024-04-15"
+
   responses:
     BadRequest:
       description: The request is invalid.
@@ -159,11 +144,20 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/ApiError"
-          example:
-            status: 400
-            error: "Bad Request"
-            message: "The request contains invalid data."
-            path: "/products"
+          examples:
+            invalidData:
+              summary: Invalid request data
+              value:
+                status: 400
+                error: "Bad Request"
+                message: "The request contains invalid data."
+
+            invalidPricePeriod:
+              summary: Invalid price validity period
+              value:
+                status: 400
+                error: "Bad Request"
+                message: "endDate 2024-01-01 must be later than initDate 2024-06-01"
 
     ProductNotFound:
       description: Product not found.
@@ -174,8 +168,38 @@ components:
           example:
             status: 404
             error: "Not Found"
-            message: "Product with identifier 1 was not found."
-            path: "/products/1/prices"
+            message: "Product with id 1 was not found."
+
+    ProductOrPriceNotFound:
+      description: Product or applicable price not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+          examples:
+            productNotFound:
+              summary: Product does not exist
+              value:
+                status: 404
+                error: "Not Found"
+                message: "Product with id 1 was not found."
+            productPriceNotFound:
+              summary: No price is applicable on the requested date
+              value:
+                status: 404
+                error: "Not Found"
+                message: "No price found for product with id 1 on date 2024-04-15."
+
+    PricePeriodConflict:
+      description: The price period overlaps with an existing price period.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+          example:
+            status: 409
+            error: "Conflict"
+            message: "The price period overlaps with an existing price period."
 
     InternalServerError:
       description: An unexpected internal error occurred.
@@ -187,7 +211,6 @@ components:
             status: 500
             error: "Internal Server Error"
             message: "An unexpected error occurred."
-            path: "/products"
 
   schemas:
     CreateProductInput:
@@ -285,7 +308,7 @@ components:
               endDate: "2025-06-30"
 
     ProductPriceOutput:
-      title: Product
+      title: ProductPriceOutput
       type: object
       additionalProperties: false
       description: Product price and its validity period.
@@ -298,13 +321,11 @@ components:
           multipleOf: 0.01
           description: Monetary value of the product price.
           example: 99.99
-
         initDate:
           type: string
           format: date
           description: First date on which the price is applicable.
           example: "2024-01-01"
-
         endDate:
           type: string
           format: date
@@ -321,7 +342,6 @@ components:
         - status
         - error
         - message
-        - path
       properties:
         status:
           type: integer
@@ -333,6 +353,3 @@ components:
         message:
           type: string
           example: "The request contains invalid data."
-        path:
-          type: string
-          example: "/products"
