@@ -5,12 +5,14 @@ import com.mango.products.domain.product.ProductDomain
 import com.mango.products.domain.product.ProductPriceDomain
 import com.mango.products.domain.exception.ProductNotFoundException
 import com.mango.products.domain.exception.ProductPriceNotFoundException
+import com.mango.products.domain.product.CreateProductDomain
 import com.mango.products.infrastructure.adapter.out.product.entity.ProductEntity
 import com.mango.products.infrastructure.adapter.out.product.entity.mapper.toDomain
 import com.mango.products.infrastructure.adapter.out.product.entity.mapper.toEntity
 import com.mango.products.infrastructure.adapter.out.product.repository.ProductJpaRepository
 import com.mango.products.infrastructure.adapter.out.product.repository.ProductPriceJpaRepository
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.LocalDate
 
@@ -20,9 +22,8 @@ class ProductAdapter(
     private val productPriceJpaRepository: ProductPriceJpaRepository
 ) : ProductPort {
 
-    override fun createProduct(productDomain: ProductDomain) {
-        productJpaRepository.save(productDomain.toEntity())
-    }
+    override fun createProduct(productDomain: ProductDomain): ProductDomain =
+        productJpaRepository.save(productDomain.toEntity()).toDomain()
 
     override fun addProductPrice(
         productId: Long,
@@ -41,13 +42,9 @@ class ProductAdapter(
             ?: throw ProductPriceNotFoundException(productId, date)
     }
 
-    override fun getProductPricesHistory(productId: Long): ProductDomain {
-        val productEntity = findProductEntity(productId)
-
-        val priceEntities = productPriceJpaRepository.findAllByProductIdOrderByInitDateAsc(productId)
-
-        return productEntity.toDomain(priceEntities)
-    }
+    @Transactional(readOnly = true)
+    override fun getProductPricesHistory(productId: Long): ProductDomain =
+        findProductEntity(productId).toDomain()
 
     override fun existsOverlappingPrice(
         productId: Long,

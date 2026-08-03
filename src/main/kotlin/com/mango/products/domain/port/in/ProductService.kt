@@ -6,7 +6,7 @@ import java.math.BigDecimal
 import java.time.LocalDate
 
 interface ProductService {
-    fun createProduct(productDomain: ProductDomain)
+    fun createProduct(productDomain: ProductDomain): ProductDomain
     fun addProductPrice(productId: Long, productPriceDomain: ProductPriceDomain)
     fun getProductPriceByDate(productId: Long, date: LocalDate): BigDecimal
     fun getProductPricesHistory(productId: Long): ProductDomain

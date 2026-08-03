@@ -12,8 +12,8 @@ import java.time.LocalDate
 
 @Service
 class ProductServiceImpl(private val productPort: ProductPort) : ProductService {
-    override fun createProduct(productDomain: ProductDomain) {
-        productPort.createProduct(productDomain)
+    override fun createProduct(productDomain: ProductDomain): ProductDomain {
+        return productPort.createProduct(productDomain)
     }
 
     override fun addProductPrice(productId: Long, productPriceDomain: ProductPriceDomain) {
