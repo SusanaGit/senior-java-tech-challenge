@@ -11,9 +11,9 @@ import io.mockk.runs
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatCode
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.math.BigDecimal
 import java.time.LocalDate
 
@@ -74,8 +74,9 @@ class ProductServiceImplTest {
         val price = price()
         every { productPort.existsOverlappingPrice(productId, price) } returns true
 
-        assertThatThrownBy { productService.addProductPrice(productId, price) }
-            .isInstanceOf(PricePeriodOverlapException::class.java)
+        assertThrows<PricePeriodOverlapException> {
+            productService.addProductPrice(productId, price)
+        }
 
         verify(exactly = 1) { productPort.existsOverlappingPrice(productId, price) }
         verify(exactly = 0) { productPort.addProductPrice(any(), any()) }

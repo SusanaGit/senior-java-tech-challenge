@@ -13,9 +13,9 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatCode
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.Optional
@@ -78,8 +78,9 @@ class ProductAdapterTest {
         val productId = 1L
         every { productJpaRepository.findById(productId) } returns Optional.empty()
 
-        assertThatThrownBy { productAdapter.addProductPrice(productId, priceDomain()) }
-            .isInstanceOf(ProductNotFoundException::class.java)
+        assertThrows<ProductNotFoundException> {
+            productAdapter.addProductPrice(productId, priceDomain())
+        }
 
         verify(exactly = 1) { productJpaRepository.findById(productId) }
         verify(exactly = 0) { productPriceJpaRepository.save(any<ProductPriceEntity>()) }
@@ -106,8 +107,9 @@ class ProductAdapterTest {
         val date = LocalDate.of(2026, 1, 15)
         every { productJpaRepository.findById(productId) } returns Optional.empty()
 
-        assertThatThrownBy { productAdapter.getProductPriceByDate(productId, date) }
-            .isInstanceOf(ProductNotFoundException::class.java)
+        assertThrows<ProductNotFoundException> {
+            productAdapter.getProductPriceByDate(productId, date)
+        }
 
         verify(exactly = 1) { productJpaRepository.findById(productId) }
         verify(exactly = 0) { productPriceJpaRepository.getProductPriceByDate(any(), any()) }
@@ -120,8 +122,9 @@ class ProductAdapterTest {
         every { productJpaRepository.findById(productId) } returns Optional.of(productEntity(productId))
         every { productPriceJpaRepository.getProductPriceByDate(productId, date) } returns null
 
-        assertThatThrownBy { productAdapter.getProductPriceByDate(productId, date) }
-            .isInstanceOf(ProductPriceNotFoundException::class.java)
+        assertThrows<ProductPriceNotFoundException> {
+            productAdapter.getProductPriceByDate(productId, date)
+        }
 
         verify(exactly = 1) { productJpaRepository.findById(productId) }
         verify(exactly = 1) { productPriceJpaRepository.getProductPriceByDate(productId, date) }
@@ -146,8 +149,9 @@ class ProductAdapterTest {
         val productId = 1L
         every { productJpaRepository.findById(productId) } returns Optional.empty()
 
-        assertThatThrownBy { productAdapter.getProductPricesHistory(productId) }
-            .isInstanceOf(ProductNotFoundException::class.java)
+        assertThrows<ProductNotFoundException> {
+            productAdapter.getProductPricesHistory(productId)
+        }
 
         verify(exactly = 1) { productJpaRepository.findById(productId) }
     }
@@ -175,8 +179,9 @@ class ProductAdapterTest {
         val productId = 1L
         every { productJpaRepository.findById(productId) } returns Optional.empty()
 
-        assertThatThrownBy { productAdapter.existsOverlappingPrice(productId, priceDomain()) }
-            .isInstanceOf(ProductNotFoundException::class.java)
+        assertThrows<ProductNotFoundException> {
+            productAdapter.existsOverlappingPrice(productId, priceDomain())
+        }
 
         verify(exactly = 1) { productJpaRepository.findById(productId) }
         verify(exactly = 0) {
