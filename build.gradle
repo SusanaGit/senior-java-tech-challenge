@@ -1,74 +1,75 @@
 plugins {
-	id 'org.jetbrains.kotlin.jvm' version '2.4.0'
-	id 'org.jetbrains.kotlin.plugin.spring' version '2.4.0'
-	id 'org.jetbrains.kotlin.plugin.jpa' version '2.4.0'
-	id 'org.springframework.boot' version '3.5.5'
-	id 'io.spring.dependency-management' version '1.1.7'
-	id 'org.openapi.generator' version '7.15.0'
+    id 'org.jetbrains.kotlin.jvm' version '2.4.0'
+    id 'org.jetbrains.kotlin.plugin.spring' version '2.4.0'
+    id 'org.jetbrains.kotlin.plugin.jpa' version '2.4.0'
+    id 'org.springframework.boot' version '3.5.5'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.openapi.generator' version '7.15.0'
 }
 
 group = 'com.mango'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
-	}
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	implementation("org.springframework.boot:spring-boot-starter-web")
-	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-	implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
 
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.10'
-	implementation 'org.openapitools:jackson-databind-nullable:0.2.8'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.10'
+    implementation 'org.openapitools:jackson-databind-nullable:0.2.8'
 
-	runtimeOnly("com.oracle.database.jdbc:ojdbc11")
+    runtimeOnly("com.oracle.database.jdbc:ojdbc11")
 
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	testImplementation("org.jetbrains.kotlin:kotlin-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.jetbrains.kotlin:kotlin-test")
+    testImplementation("io.mockk:mockk:1.14.11")
 
-	implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
 }
 
 openApiGenerate {
-	generatorName = "kotlin-spring"
+    generatorName = "kotlin-spring"
 
-	inputSpec = "$rootDir/contract/contract.yml"
-	outputDir = "$buildDir/generated"
+    inputSpec = "$rootDir/contract/contract.yml"
+    outputDir = "$buildDir/generated"
 
-	apiPackage = "com.mango.products.infrastructure.api"
-	modelPackage = "com.mango.products.infrastructure.api.model"
+    apiPackage = "com.mango.products.infrastructure.api"
+    modelPackage = "com.mango.products.infrastructure.api.model"
 
-	configOptions = [
-			interfaceOnly        : "true",
-			useSpringBoot3       : "true",
-			useTags              : "true",
-			dateLibrary          : "java8",
-			useBeanValidation    : "true",
-			useJakartaEe         : "true",
-			documentationProvider: "none"
-	]
+    configOptions = [
+            interfaceOnly        : "true",
+            useSpringBoot3       : "true",
+            useTags              : "true",
+            dateLibrary          : "java8",
+            useBeanValidation    : "true",
+            useJakartaEe         : "true",
+            documentationProvider: "none"
+    ]
 }
 
 kotlin {
-	sourceSets {
-		main {
-			kotlin.srcDir("$buildDir/generated/src/main/kotlin")
-		}
-	}
+    sourceSets {
+        main {
+            kotlin.srcDir("$buildDir/generated/src/main/kotlin")
+        }
+    }
 }
 
 tasks.named("compileKotlin") {
-	dependsOn("openApiGenerate")
+    dependsOn("openApiGenerate")
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }
