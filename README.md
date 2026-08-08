@@ -2,151 +2,223 @@
 
 ## 1. Instrucciones para compilar y ejecutar el proyecto.
 
+Situarse en el directorio donde se encuentra el docker-compose.yml y ejecutar docker compose up.
+
 ## 2. Justificación de decisiones técnicas.
+
+### SpringBoot JPA
+
+He creado las dos entidades para las dos tablas que necesito en esta implementación.
+
+También añadidos los repositorios que tienen las queries para obtener la información que necesito de la base de datos.
+
+### Flyway para crear y actualizar el esquema de la db
+
+Flyway se encargará de crear y versionar el esquema de la base de datos. Los cambios en la base de datos se realizarán
+ordenadamente y todos los componentes del equipo tendrán la versión de datos actualizada.
 
 ### Creación del contract.yml
 
+Para generar automáticamente la interfaz que implementará el controller (definir los endpoints).
+
 ### Arquitectura Hexagonal
+
+Imprescindible para no tener que modificar la lógica de negocio si surgen cambios en la parte de infraestructura.
+
+### Tests MockK
+
+Me ha parecido lo más óptimo ya que estoy codificando con Kotlin.
 
 ## 3. Indicaciones si agregaste mejoras, asumiste supuestos o cambiaste los endpoints.
 
 ### Modificación de los endpoints
 
-He modificado el endpoint GET /products/{id}/*prices*?date=2024-04-15 cambiando el prices por price, ya que lo que quiero obtener es el precio del producto para la fecha específica y considero que se entiende mejor en singular. La otra opción se
-interpretaría como aplicar el filtro de la fecha en la colección de precios del producto, pero me parece menos entendible.
+He modificado el endpoint GET /products/{id}/ *prices*?date=2024-04-15 cambiando el prices por price, ya que lo que
+quiero obtener es el precio del producto para la fecha específica y considero que se entiende mejor en singular. La otra
+opción se interpretaría como aplicar el filtro de la fecha en la colección de precios del producto, pero me parece menos
+entendible.
 
-## 4. Cómo ejecutar la prueba de rendimiento (si aplicaste ese desafío).
+Al id le he llamado productId para que se interprete su significado de manera más sencilla.
 
+## 4. Mejora del rendimiento
 
+### Tiempo de arranque de la aplicación sin ninguna optimización (benchmark deshabilitado)
 
+TIEMPO DE ARRANQUE SIN OPTIMIZACIONES: Root WebApplicationContext: initialization completed in 12095 ms
 
+### Tiempo de arranque de la aplicación con mejoras (benchmark deshabilitado)
 
+- Estoy usando Flyway, para que se encargue de mantener estable y actualizado el esquema de la base de datos. Así,
+  Hibernate no se encargará de analizar el esquema, se reducirá el tiempo. Modifico SPRING_JPA_HIBERNATE_DDL_AUTO:
+  update a validate en el docker-compose.yml, y en el application.yml.
 
+```yml
+  SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+```
 
+```yml
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+```
 
+- En el application.yml, hago que show-sql y properties.hibernate.format_sql sea false, ya que no lo necesito.
 
-Tu objetivo es diseñar e implementar una API que permita gestionar productos y sus precios históricos. Cada producto puede tener múltiples precios a lo largo del tiempo, pero solo un precio puede estar vigente para una misma fecha.
+- Hago que la aplicación se compile de manera nativa, para reducir tareas realizadas durante el arranque al compilar la
+  aplicación con JVM. La compilación AOT que se produce con graalvm transforma previamente la aplicación en código
+  máquina y permite que Spring procese anticipadamente parte de la configuración. Añado el plugin de graalvm native al
+  build.gradle. Ahora, para ejecutar naviteCompile, añado el nombre del ejecutable al build.gradle:
 
----
+```gradle
+graalvmNative {
+    binaries {
+        main {
+            imageName = 'product-api'
+        }
+    }
+}
+```
 
-## 🎯 Objetivo
+- Ahora necesito modificar el Dockerfile para que no me cree un JAR y lo ejecute con la JVM. Modifico el Dockerfile:
 
-Queremos que demuestres tus conocimientos técnicos, tu criterio para tomar decisiones de diseño, y tu capacidad para resolver un problema realista de backend.
+```dockerfile
+RUN ./gradlew nativeCompile --no-daemon
 
-Puedes usar el **framework que prefieras**, la **arquitectura que consideres apropiada** y la **base de datos que mejor se adapte a tu solución**. Algunas opciones válidas incluyen Spring Boot, Quarkus, Java puro, PostgreSQL, MongoDB, MySQL, H2, etc.
+ENTRYPOINT ["/app/product-api"]
+```
 
-La implementación puede realizarse en **Java o Kotlin**.
+- Construyo la imagen debian:bookworm-slim: docker compose build
 
-⚠️ **Uno de los requisitos más importantes de esta prueba es que tu solución tenga el mejor rendimiento posible**, tanto en tiempo de respuesta como en uso eficiente de recursos.
+![img.png](img/img.png)
 
----
+![img2.png](img/img2.png)
 
-## 📘 Requisitos funcionales
+![img3.png](img/img3.png)
 
-### Endpoints obligatorios
+TIEMPO DE ARRANQUE CON OPTIMIZACIONES: Root WebApplicationContext: initialization completed in 37 ms
 
-Debes implementar los siguientes endpoints:
+![img4.png](img/img4.png)
 
-1. **Crear un producto**
-    - `POST /products`
-    - Body:
-      ```json
-      {
-        "name": "Zapatillas deportivas",
-        "description": "Modelo 2025 edición limitada"
-      }
-      ```
+### Optimizar tiempo de las queries
 
-2. **Agregar un precio a un producto**
-    - `POST /products/{id}/prices`
-    - Body:
-      ```json
-      {
-        "value": 99.99,
-        "initDate": "2024-01-01",
-        "endDate": "2024-06-30"
-      }
-      ```
-    - Reglas:
-        - No debe haber solapamiento de fechas con otros precios del mismo producto.
-        - `endDate` puede ser `null`.
-        - Validar que `initDate` < `endDate` si ambas existen.
+- Añado índice para mejorar el rendimiento de las queries en el esquema sql de Flyway:
 
-3. **Obtener el precio vigente de un producto en una fecha**
-    - `GET /products/{id}/prices?date=2024-04-15`
-    - Body:
-      ```json
-      {
-        "value": 99.99
-      }
-      ```
+```sql
+CREATE INDEX IDX_PRICE_PRODUCT_DATES
+    ON PRICE (PRODUCT_ID, INIT_DATE, END_DATE);
+```
 
-4. **Obtener el historial completo de precios de un producto**
-    - `GET /products/{id}/prices`
-    - Body:
-      ```json
-      {
-        "name": "Zapatillas deportivas",
-        "description": "Modelo 2025 edición limitada",
-        "prices": [
-          {
-            "value": 99.99,
-            "initDate": "2024-01-01",
-            "endDate": "2024-06-30"
-          },
-          {
-            "value": 199.99,
-            "initDate": "2025-01-01",
-            "endDate": "2025-06-30"
-          },
-        ]
-      }
-      ```
+### Ejecuto el benchmark.sh que venía con el proyecto para ver cuanto tardan las ejecuciones
 
-📌 **Nota**:  
-Los endpoints anteriores se utilizarán en las pruebas automáticas.  
-Sin embargo, **si consideras que alguno puede mejorarse para alinearse mejor con la semántica REST**, puedes hacerlo libremente, justificándolo en el README de tu proyecto.
+Añado a Dockerfile.benchmark el bc para poder ver lo que dura la ejecución:
 
----
+```text
+DURATION=$(echo "$END_TIME - $START_TIME" | bc)
+```
 
-## ✅ Criterios de evaluación
+### Creación de un nuevo contenedor que ejecuta múltiples peticiones concurrentes
 
-- Modelado correcto de entidades y relaciones.
-- Validación robusta de reglas de negocio.
-- Diseño RESTful claro y consistente.
-- Organización del código y buenas prácticas.
-- Elección justificada del stack técnico.
-- **Rendimiento**: arranque rápido, respuestas ágiles, bajo uso de recursos.
-- Tests automatizados (unitarios o de integración).
-- Claridad en la documentación y facilidad de ejecución.
+Elijo usar k6 porque a parte de lanzar varias peticiones concurrentes, me aporta métricas.
 
----
+Me decido por la imagen Docker grafana/k6:latest: https://hub.docker.com/r/grafana/k6
 
-## 🚀 Desafíos opcionales (bonus)
+En el script benchmark.sh que se adjunta con el proyecto veo que se dan:
 
-### 1. Prueba de rendimiento automatizada
+```text
+1000 peticiones POST "$BASE_URL/products"
+20000 peticiones GET "$BASE_URL/products/$PRODUCT_ID/prices?date=2024-04-15"
+15000 peticiones GET "$BASE_URL/products/$PRODUCT_ID/prices"
+```
 
-Puedes incluir una prueba automática de performance para validar el comportamiento de tu API bajo carga.
+Trato de recrear que se lancen las mismas peticiones en mi archivo `benchmark.js`: me parece más realista que hayan
+distintos usuarios lanzando las peticiones, no solo uno.
 
-#### ¿Qué debes entregar?
+- product_creation: 25 usuarios virtuales lanzarán en total 1000 peticiones
+- price_by_date: 50 usuarios virtuales lanzarán un total de 20000 peticiones
+- price_history: 50 usuarios virtuales lanzarán un total de 15000 peticiones
 
-- Un archivo `docker-compose.yml` que:
-    - Levante tu aplicación.
-    - Ejecute un script o herramienta (por ejemplo, Gatling, k6, Artillery, JMeter, etc.) con múltiples peticiones concurrentes.
+```javascript
+scenarios: {
+    product_creation: {
+        executor: 'shared-iterations',
+            exec
+    :
+        'createProduct',
+            vus
+    :
+        25,
+            iterations
+    :
+        1000,
+            maxDuration
+    :
+        '2m',
+    }
+,
 
-#### ¿Qué se evaluará?
+    price_by_date: {
+        executor: 'shared-iterations',
+            exec
+    :
+        'getPriceByDate',
+            vus
+    :
+        50,
+            iterations
+    :
+        20000,
+            maxDuration
+    :
+        '5m',
+    }
+,
 
-- Tiempo de arranque de la aplicación.
-- Velocidad de ejecución de los endpoints.
-- Peticiones exitosas por segundo.
-- Uso de recursos bajo carga.
+    price_history: {
+        executor: 'shared-iterations',
+            exec
+    :
+        'getPriceHistory',
+            vus
+    :
+        50,
+            iterations
+    :
+        15000,
+            maxDuration
+    :
+        '5m',
+    }
+,
+}
+```
+
+## 5. Resultados de la ejecución
+
+### Velocidad de ejecución de los endpoints
+
+### Peticiones exitosas por segundo
+
+### Uso de recursos bajo carga
+
+## 6. Entrega
+
+### Archivo docker-compose.yml
+
+Se entrega el archivo docker-compose.yml que levanta la aplicación y ejecuta la herramienta k6 para que se envíen
+múltiples peticiones concurrentes.
 
 #### Restricciones importantes:
 
 - **No se podrán modificar los valores de CPU ni memoria del contenedor de la aplicación ni del script de rendimiento**.
-- **Puedes añadir nuevos contenedores auxiliares**, siempre que **cada uno tenga un máximo de 1 GB de memoria y 500 Mi de CPU**.
+- **Puedes añadir nuevos contenedores auxiliares**, siempre que **cada uno tenga un máximo de 1 GB de memoria y 500 Mi
+  de CPU**.
 
-Esto te permite aplicar estrategias como separación de servicios, caché, balanceo, precálculo, etc., **pero dentro de restricciones razonables de infraestructura**.
+Esto te permite aplicar estrategias como separación de servicios, caché, balanceo, precálculo, etc., **pero dentro de
+restricciones razonables de infraestructura**.
 
 ---
 

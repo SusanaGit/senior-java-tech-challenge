@@ -54,19 +54,19 @@ echo -e "\n"
 # Get the price on a specific date
 DATE="2024-04-15"
 echo "Getting price on date $DATE..."
-curl -X GET "$BASE_URL/products/$PRODUCT_ID/prices?date=$DATE"
+curl -X GET "$BASE_URL/products/$PRODUCT_ID/price?date=$DATE"
 echo -e "\n"
 
 # Get another price on a different date
 DATE2="2024-08-15"
 echo "Getting price on date $DATE2..."
-curl -X GET "$BASE_URL/products/$PRODUCT_ID/prices?date=$DATE2"
+curl -X GET "$BASE_URL/products/$PRODUCT_ID/price?date=$DATE2"
 echo -e "\n"
 
 # Get current price
 DATE3="2025-03-01"
 echo "Getting current price on date $DATE3..."
-curl -X GET "$BASE_URL/products/$PRODUCT_ID/prices?date=$DATE3"
+curl -X GET "$BASE_URL/products/$PRODUCT_ID/price?date=$DATE3"
 echo -e "\n"
 
 # Get full price history

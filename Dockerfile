@@ -1,10 +1,18 @@
-FROM gradle:8.14.4-jdk21 AS build
-COPY --chown=gradle:gradle . /home/gradle/project
-WORKDIR /home/gradle/project
-RUN ./gradlew clean build --no-daemon
+FROM ghcr.io/graalvm/native-image-community:21 AS build
+USER root
+RUN microdnf install -y findutils \
+    && microdnf clean all
+WORKDIR /project
+COPY . .
+RUN ./gradlew nativeCompile --no-daemon
 
-FROM eclipse-temurin:21-jre
+FROM debian:bookworm-slim
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends zlib1g \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY --from=build /home/gradle/project/build/libs/*.jar app.jar
+COPY --from=build \
+    /project/build/native/nativeCompile/product-api \
+    /app/product-api
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["/app/product-api"]

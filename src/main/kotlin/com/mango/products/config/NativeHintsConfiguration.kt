@@ -1,0 +1,9 @@
+package com.mango.products.config
+
+import org.flywaydb.database.oracle.OracleConfigurationExtension
+import org.springframework.aot.hint.annotation.RegisterReflectionForBinding
+import org.springframework.context.annotation.Configuration
+
+@Configuration
+@RegisterReflectionForBinding(OracleConfigurationExtension::class)
+class NativeHintsConfiguration

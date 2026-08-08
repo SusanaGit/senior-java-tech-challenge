@@ -5,6 +5,7 @@ plugins {
     id 'org.springframework.boot' version '3.5.5'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'org.openapi.generator' version '7.15.0'
+    id 'org.graalvm.buildtools.native' version '0.10.6'
 }
 
 group = 'com.mango'
@@ -30,6 +31,9 @@ dependencies {
     implementation 'org.openapitools:jackson-databind-nullable:0.2.8'
 
     runtimeOnly("com.oracle.database.jdbc:ojdbc11")
+
+    implementation("org.flywaydb:flyway-core")
+    implementation("org.flywaydb:flyway-database-oracle")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
@@ -72,4 +76,12 @@ tasks.named("compileKotlin") {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+graalvmNative {
+    binaries {
+        main {
+            imageName = 'product-api'
+        }
+    }
 }

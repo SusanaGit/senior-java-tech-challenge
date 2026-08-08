@@ -1,14 +1,6 @@
 package com.mango.products.infrastructure.adapter.out.product.entity
 
-import jakarta.persistence.CascadeType
-import jakarta.persistence.Entity
-import jakarta.persistence.FetchType
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
-import jakarta.persistence.OneToMany
-import jakarta.persistence.SequenceGenerator
-import jakarta.persistence.Table
+import jakarta.persistence.*
 
 @Entity
 @Table(name = "PRODUCT")
@@ -25,8 +17,10 @@ class ProductEntity(
     )
     var id: Long? = null,
 
+    @Column(nullable = false, length = 255)
     var name: String,
 
+    @Column(nullable = false, length = 255)
     var description: String,
 
     @OneToMany(
