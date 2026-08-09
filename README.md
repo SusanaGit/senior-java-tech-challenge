@@ -83,7 +83,7 @@ graalvmNative {
 }
 ```
 
-- Ahora necesito modificar el Dockerfile para que no me cree un JAR y lo ejecute con la JVM. Modifico el Dockerfile:
+- Ahora necesito modificar el Dockerfile para que use AOT para compilar en vez de JVM. Modifico el Dockerfile:
 
 ```dockerfile
 RUN ./gradlew nativeCompile --no-daemon
@@ -92,10 +92,6 @@ ENTRYPOINT ["/app/product-api"]
 ```
 
 - Construyo la imagen: docker compose build
-
-![img.png](img/img.png)
-
-![img2.png](img/img2.png)
 
 ![img3.png](img/img3.png)
 
@@ -127,11 +123,13 @@ TIEMPO EN REALIZARSE TODAS LAS PETICIONES CON EL SCRIPT BENCHMARK INICIAL:
 
 ![img6.png](img/img6.png)
 
+```text
 1000 peticiones POST "$BASE_URL/products": 6.720584981 seconds
 
 20000 peticiones GET "$BASE_URL/products/$PRODUCT_ID/price?date=2024-04-15": 252.118104199 seconds
 
 15000 peticiones GET "$BASE_URL/products/$PRODUCT_ID/prices": 283.480768207 seconds
+```
 
 ### Creación de un nuevo contenedor que ejecuta múltiples peticiones concurrentes
 
@@ -161,11 +159,11 @@ distintos usuarios lanzando las peticiones, no solo uno.
 ![img8.png](img/img8.png)
 ![img9.png](img/img9.png)
 
-1000 peticiones POST "$BASE_URL/products":
-
-20000 peticiones GET "$BASE_URL/products/$PRODUCT_ID/price?date=2024-04-15":
-
-15000 peticiones GET "$BASE_URL/products/$PRODUCT_ID/prices":
+```text
+1000 peticiones k6 POST "$BASE_URL/products": 8 seconds
+20000 peticiones k6 GET "$BASE_URL/products/$PRODUCT_ID/price?date=2024-04-15": 42 seconds
+15000 peticiones k6 GET "$BASE_URL/products/$PRODUCT_ID/prices": 34,3 seconds
+```
 
 ## 5. Resultados de la ejecución
 
@@ -178,19 +176,19 @@ distintos usuarios lanzando las peticiones, no solo uno.
 
 - Velocidad inicial ejecución benchmark.sh:
 
+```text
 1000 peticiones POST "$BASE_URL/products": 6.720584981 seconds
-
 20000 peticiones GET "$BASE_URL/products/$PRODUCT_ID/price?date=2024-04-15": 252.118104199 seconds
-
 15000 peticiones GET "$BASE_URL/products/$PRODUCT_ID/prices": 283.480768207 seconds
+```
 
 - Velocidad tras la optimización con k6:
 
+```text
 1000 peticiones k6 POST "$BASE_URL/products": 8 seconds
-
 20000 peticiones k6 GET "$BASE_URL/products/$PRODUCT_ID/price?date=2024-04-15": 42 seconds
-
 15000 peticiones k6 GET "$BASE_URL/products/$PRODUCT_ID/prices": 34,3 seconds
+```
 
 ### Peticiones exitosas por segundo
 
@@ -200,7 +198,14 @@ distintos usuarios lanzando las peticiones, no solo uno.
 
 ### Uso de recursos bajo carga
 
-- Ejecuto docker stats product-api mangodb, y luego docker compose run --rm --no-deps benchmark:
+- Ejecuto: docker compose up -d oracle app
+- En una terminal: docker stats product-api mangodb
+- En otra terminal: docker compose run --rm --no-deps benchmark
+
+Veo que product-api está usando casi 1 núcleo completo y alcanza el límite de 1CPU. Por otro lado, mangodb Oracle está
+gastando de memoria más del 80%, muy cercano al límite.
+
+![img11.png](img/img11.png)
 
 ## 6. Entrega
 
@@ -208,3 +213,20 @@ distintos usuarios lanzando las peticiones, no solo uno.
 
 Se entrega el zip con el proyecto que contiene el archivo docker-compose.yml que levanta la aplicación, oracle y
 benchmark para que se envíen múltiples peticiones concurrentes.
+
+## 7. Conclusiones
+
+Las claves para las mejoras en el rendimiento han sido la compilación nativa mediante AOT, que ha reducido
+considerablemente el tiempo de arranque, y añadir un índice sobre campos de las consultas.
+
+La modificación de benchmark también ha marcado la diferencia. En el script que venía en el proyecto se lanzaban las
+peticiones secuencialmente, lo que no se asemeja al mundo real, en que distintos clientes envian peticiones a la vez de
+manera concurrente. En el benchmark.js podéis ver la nueva implementación, donde distintos usuarios virtuales lanzan
+peticiones a la vez, lo que reduce mucho el tiempo.
+
+Agradecida por la oportunidad de realizar este reto, la verdad que lo he pasado muy bien diseñando la arquitectura y
+pensando como se podía optimizar el rendimiento.
+
+Un saludo,
+
+Susana Figueroa
