@@ -91,7 +91,7 @@ RUN ./gradlew nativeCompile --no-daemon
 ENTRYPOINT ["/app/product-api"]
 ```
 
-- Construyo la imagen debian:bookworm-slim: docker compose build
+- Construyo la imagen: docker compose build
 
 ![img.png](img/img.png)
 
@@ -120,6 +120,19 @@ Añado a Dockerfile.benchmark el bc para poder ver lo que dura la ejecución:
 DURATION=$(echo "$END_TIME - $START_TIME" | bc)
 ```
 
+- Para tener controlada la prueba, arranco primero el contenedor de oracle y de la aplicación: docker compose up -d
+  oracle app. Una vez levantados, ejecuto el de benchmark.
+
+TIEMPO EN REALIZARSE TODAS LAS PETICIONES CON EL SCRIPT BENCHMARK INICIAL:
+
+![img6.png](img/img6.png)
+
+1000 peticiones POST "$BASE_URL/products": 6.720584981 seconds
+
+20000 peticiones GET "$BASE_URL/products/$PRODUCT_ID/price?date=2024-04-15": 252.118104199 seconds
+
+15000 peticiones GET "$BASE_URL/products/$PRODUCT_ID/prices": 283.480768207 seconds
+
 ### Creación de un nuevo contenedor que ejecuta múltiples peticiones concurrentes
 
 Elijo usar k6 porque a parte de lanzar varias peticiones concurrentes, me aporta métricas.
@@ -130,7 +143,7 @@ En el script benchmark.sh que se adjunta con el proyecto veo que se dan:
 
 ```text
 1000 peticiones POST "$BASE_URL/products"
-20000 peticiones GET "$BASE_URL/products/$PRODUCT_ID/prices?date=2024-04-15"
+20000 peticiones GET "$BASE_URL/products/$PRODUCT_ID/price?date=2024-04-15"
 15000 peticiones GET "$BASE_URL/products/$PRODUCT_ID/prices"
 ```
 
@@ -141,92 +154,57 @@ distintos usuarios lanzando las peticiones, no solo uno.
 - price_by_date: 50 usuarios virtuales lanzarán un total de 20000 peticiones
 - price_history: 50 usuarios virtuales lanzarán un total de 15000 peticiones
 
-```javascript
-scenarios: {
-    product_creation: {
-        executor: 'shared-iterations',
-            exec
-    :
-        'createProduct',
-            vus
-    :
-        25,
-            iterations
-    :
-        1000,
-            maxDuration
-    :
-        '2m',
-    }
-,
+![img7.png](img/img7.png)
 
-    price_by_date: {
-        executor: 'shared-iterations',
-            exec
-    :
-        'getPriceByDate',
-            vus
-    :
-        50,
-            iterations
-    :
-        20000,
-            maxDuration
-    :
-        '5m',
-    }
-,
+- Ejecuto el contenedor de benchmark k6 que he creado: docker compose run --rm --no-deps benchmark
 
-    price_history: {
-        executor: 'shared-iterations',
-            exec
-    :
-        'getPriceHistory',
-            vus
-    :
-        50,
-            iterations
-    :
-        15000,
-            maxDuration
-    :
-        '5m',
-    }
-,
-}
-```
+![img8.png](img/img8.png)
+![img9.png](img/img9.png)
+
+1000 peticiones POST "$BASE_URL/products":
+
+20000 peticiones GET "$BASE_URL/products/$PRODUCT_ID/price?date=2024-04-15":
+
+15000 peticiones GET "$BASE_URL/products/$PRODUCT_ID/prices":
 
 ## 5. Resultados de la ejecución
 
+### Velocidad de arranque de la aplicación
+
+- Velocidad inicial de la app: Root WebApplicationContext: initialization completed in 12095 ms
+- Velocidad tras la optimización: Root WebApplicationContext: initialization completed in 37 ms
+
 ### Velocidad de ejecución de los endpoints
+
+- Velocidad inicial ejecución benchmark.sh:
+
+1000 peticiones POST "$BASE_URL/products": 6.720584981 seconds
+
+20000 peticiones GET "$BASE_URL/products/$PRODUCT_ID/price?date=2024-04-15": 252.118104199 seconds
+
+15000 peticiones GET "$BASE_URL/products/$PRODUCT_ID/prices": 283.480768207 seconds
+
+- Velocidad tras la optimización con k6:
+
+1000 peticiones k6 POST "$BASE_URL/products": 8 seconds
+
+20000 peticiones k6 GET "$BASE_URL/products/$PRODUCT_ID/price?date=2024-04-15": 42 seconds
+
+15000 peticiones k6 GET "$BASE_URL/products/$PRODUCT_ID/prices": 34,3 seconds
 
 ### Peticiones exitosas por segundo
 
+- Con k6: Como no ha habido ningún error: http_reqs........: 36003 854.72035/s
+
+![img10.png](img/img10.png)
+
 ### Uso de recursos bajo carga
+
+- Ejecuto docker stats product-api mangodb, y luego docker compose run --rm --no-deps benchmark:
 
 ## 6. Entrega
 
-### Archivo docker-compose.yml
+### Zip del proyecto que contiene el archivo docker-compose.yml
 
-Se entrega el archivo docker-compose.yml que levanta la aplicación y ejecuta la herramienta k6 para que se envíen
-múltiples peticiones concurrentes.
-
-#### Restricciones importantes:
-
-- **No se podrán modificar los valores de CPU ni memoria del contenedor de la aplicación ni del script de rendimiento**.
-- **Puedes añadir nuevos contenedores auxiliares**, siempre que **cada uno tenga un máximo de 1 GB de memoria y 500 Mi
-  de CPU**.
-
-Esto te permite aplicar estrategias como separación de servicios, caché, balanceo, precálculo, etc., **pero dentro de
-restricciones razonables de infraestructura**.
-
----
-
-### 2. Otros desafíos opcionales
-
-- Soporte para múltiples monedas por precio.
-- Endpoint para actualizar o eliminar precios.
-- Autenticación básica o con token.
-- Documentación con Swagger/OpenAPI.
-- Scripts para poblar datos de prueba automáticamente.
-- Soporte para paginación, ordenamiento o filtrado en el historial de precios.
+Se entrega el zip con el proyecto que contiene el archivo docker-compose.yml que levanta la aplicación, oracle y
+benchmark para que se envíen múltiples peticiones concurrentes.

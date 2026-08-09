@@ -50,40 +50,24 @@ services:
           cpus: "0.5"
           memory: 512M
 
-  # benchmark:
-  #   image: grafana/k6:latest
-  #   container_name: product-benchmark
-  #   environment:
-  #     BASE_URL: http://product-api:8080
-  #   volumes:
-  #     - ./performance/k6:/scripts:ro
-  #   command: run /scripts/benchmark.js
-  #   depends_on:
-  #     - app
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: "1.0"
-  #         memory: 1G
-  #       reservations:
-  #         cpus: "0.25"
-  #         memory: 256M
+  benchmark:
+    image: grafana/k6:latest
+    container_name: product-benchmark
+    environment:
+      BASE_URL: http://product-api:8080
+    volumes:
+      - ./performance/k6:/scripts:ro
+    command: run /scripts/benchmark.js
+    depends_on:
+      - app
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+        reservations:
+          cpus: "0.25"
+          memory: 256M
 
-  # benchmark:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.benchmark
-  #   container_name: product-benchmark
-  #   depends_on:
-  #     - app
-  #   command: sh -c "chmod +x /app/benchmark.sh && /app/benchmark.sh"
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: "1.0"
-  #         memory: 1G
-  #       reservations:
-  #         cpus: "0.25"
-  #         memory: 256M
 volumes:
   mangodb:
